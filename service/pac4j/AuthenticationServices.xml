@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<services>
+    <service verb="perform" noun="Login" type="java" authenticate="anonymous-all" location="org.mk.moqui.authentication.Login" method="login" />
+    <service verb="perform" noun="Callback" type="java" authenticate="anonymous-all" location="org.mk.moqui.authentication.Login" method="callback" />
+    <service verb="perform" noun="Logout" type="java" authenticate="anonymous-all" location="org.mk.moqui.authentication.Login" method="logout" />
+</services>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<screen require-authentication="false">
+
+    <transition name="callback" method="get" read-only="true">
+      	<service-call name="pac4j.AuthenticationServices.perform#Callback"/>
+        <default-response type="none"/>
+    </transition>
+    <transition name="performLogin" method="get" read-only="true">
+        <service-call name="pac4j.AuthenticationServices.perform#Login" />
+        <default-response type="none"/>
+    </transition>
+
+    <pre-actions>
+        <!-- Redirect user to root if already signed in -->
+        <script>if (ec.user.userId) sri.sendRedirectAndStopRender('/')</script>
+        <service-call name="pac4j.AuthenticationServices.perform#Login" />
+    </pre-actions>
+
+</screen>

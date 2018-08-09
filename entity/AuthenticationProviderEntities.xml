@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-2.1.xsd">
+    <entity entity-name="AuthenticationClient" package="mk.authentication" short-alias="clients">
+        <field name="clientId" type="id" is-pk="true"/>
+        <field name="name" type="text-short" />
+        <field name="enabled" type="text-indicator" default="N" />
+    </entity>
+
+    <entity entity-name="OidcAuthenticationClient" package="mk.authentication">
+        <field name="clientId" type="id" is-pk="true" />
+        <field name="id" type="text-short" />
+        <field name="secret" type="text-short" />
+        <field name="discoveryUri" type="text-medium" />
+        <field name="preferredJwsAlgorithm" type="text-short" />
+        <field name="useNonce" type="text-indicator" />
+
+        <relationship type="one" related="mk.authentication.AuthenticationClient" />
+    </entity>
+</entities>

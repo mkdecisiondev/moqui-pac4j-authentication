@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<screen require-authentication="false">
+    <transition name="callback" method="get" read-only="true">
+          	<service-call name="pac4j.AuthenticationServices.perform#Callback"/>
+            <default-response type="none"/>
+    </transition>
+    <transition name="logout">
+        <actions>
+            <service-call name="pac4j.AuthenticationServices.perform#Logout" />
+        </actions>
+        <default-response type="none"/>
+    </transition>
+
+    <subscreens default-item="Login">
+        <subscreens-item name="Local" location="component://webroot/screen/webroot/Login.xml" />
+    </subscreens>
+    <widgets>
+        <subscreens-active />
+    </widgets>
+</screen>
