@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<screen require-authentication="false">
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+        require-authentication="false">
     <transition name="callback" method="get" read-only="true">
           	<service-call name="pac4j.AuthenticationServices.perform#Callback"/>
             <default-response type="none"/>
