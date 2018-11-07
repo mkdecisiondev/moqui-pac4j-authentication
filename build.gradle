@@ -15,6 +15,7 @@ dependencies {
 
     // pac4j
     compile 'org.pac4j:pac4j-oidc:3.0.2'
+    compile 'org.pac4j:pac4j-jwt:3.0.2'
 }
 
 check.dependsOn.clear()

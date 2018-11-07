@@ -3,4 +3,9 @@
     <service verb="perform" noun="Login" type="java" authenticate="anonymous-all" location="org.mk.moqui.authentication.Login" method="login" />
     <service verb="perform" noun="Callback" type="java" authenticate="anonymous-all" location="org.mk.moqui.authentication.Login" method="callback" />
     <service verb="perform" noun="Logout" type="java" authenticate="anonymous-all" location="org.mk.moqui.authentication.Login" method="logout" />
+    <service verb="get" noun="ApiKey" type="script" authenticate="anonymous-all" location="component://moqui-pac4j-authentication/src/main/groovy/org/mk/moqui/authentication/AuthorizeJWT.groovy">
+        <in-parameters>
+            <parameter name="token" />
+        </in-parameters>
+    </service>
 </services>
