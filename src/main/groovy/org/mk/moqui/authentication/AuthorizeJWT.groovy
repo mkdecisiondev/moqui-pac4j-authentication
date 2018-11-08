@@ -4,19 +4,35 @@ import com.nimbusds.jose.JOSEException
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.KeyConverter
-import com.nimbusds.jose.jwk.RSAKey
-import com.nimbusds.jose.jwk.source.RemoteJWKSet
 import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.jwt.proc.BadJWTException
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata
-import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
+import org.moqui.entity.EntityCondition
 import org.moqui.impl.context.ExecutionContextImpl
-import org.pac4j.jwt.config.signature.RSASignatureConfiguration
-import org.pac4j.jwt.credentials.authenticator.JwtAuthenticator
 import org.pac4j.oidc.client.OidcClient
 import com.nimbusds.jose.util.DefaultResourceRetriever
+
+import java.sql.Timestamp
+
+static void saveApiKey(ExecutionContextImpl eci, String key, long exp) {
+	// Copied from UserFacadeImpl
+	def userId = eci.user.getUserId()
+	String hashedKey = eci.ecfi.getSimpleHash(key, "", eci.ecfi.getLoginKeyHashType(), false)
+	Timestamp fromDate = new Timestamp(System.currentTimeMillis())
+
+	// Check to see if the key already exists
+	def existing = eci.entity.find('moqui.security.UserLoginKey').condition([userId:userId, loginKey:hashedKey]).one()
+	if (!existing) {
+		eci.serviceFacade.sync().name("create", "moqui.security.UserLoginKey")
+			.parameters([loginKey:hashedKey, userId:userId, fromDate:fromDate, thruDate:new Timestamp(exp)])
+			.disableAuthz().requireNewTransaction(true).call()
+	}
+
+	// clean out expired keys
+	eci.entity.find("moqui.security.UserLoginKey").condition("userId", userId)
+		.condition("thruDate", EntityCondition.LESS_THAN, fromDate).disableAuthz().deleteAll()
+}
 
 def resourceRetreiver = new DefaultResourceRetriever(10000, 10000)
 
@@ -52,9 +68,8 @@ try {
 	// Log user in using the username in the token
 	eci.userFacade.internalLoginUser(jwt.JWTClaimsSet.getStringClaim("preferred_username"))
 
-	// Get and send the api key
-	def apiKey = eci.userFacade.getLoginKey()
-	eci.web.sendJsonResponse([apiKey: apiKey])
+	// Save the api key so it can be used to authenticate requests
+	saveApiKey(eci, jwt.parsedString, jwt.JWTClaimsSet.getExpirationTime().toInstant().toEpochMilli())
 } catch (JOSEException | BadJWTException e) {
 	if (e instanceof JOSEException) {
 		eci.logger.warn("JWT signature verification failed")
