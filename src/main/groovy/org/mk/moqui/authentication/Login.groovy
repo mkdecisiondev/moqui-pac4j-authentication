@@ -91,7 +91,7 @@ class Login {
                     context,
                     getConfig(ec),
                     J2ENopHttpActionAdapter.INSTANCE,
-                    getMoquiUrl(ec),
+                null,
                     true,
                     false,
                     true,

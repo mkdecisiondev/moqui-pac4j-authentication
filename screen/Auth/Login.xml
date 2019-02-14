@@ -4,8 +4,8 @@
         require-authentication="false">
 
     <transition name="callback" method="get" read-only="true">
-      	<service-call name="pac4j.AuthenticationServices.perform#Callback"/>
-        <default-response type="none"/>
+        <service-call name="pac4j.AuthenticationServices.perform#Callback"/>
+        <default-response type="screen-last"/>
     </transition>
     <transition name="performLogin" method="get" read-only="true">
         <service-call name="pac4j.AuthenticationServices.perform#Login" />
@@ -17,5 +17,5 @@
         <script>if (ec.user.userId) sri.sendRedirectAndStopRender('/')</script>
         <service-call name="pac4j.AuthenticationServices.perform#Login" />
     </pre-actions>
-
+    <widgets></widgets>
 </screen>

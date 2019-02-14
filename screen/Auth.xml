@@ -3,19 +3,17 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         require-authentication="false">
     <always-actions>
-        <actions>
-            <script>
-                // TODO: Tighten up
-                def response = ec.web.response
-                response.addHeader('Access-Control-Allow-Origin', '*')
-                response.addHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
-                response.addHeader('Access-Control-Allow-Headers', 'Content-Type')
-            </script>
-        </actions>
+        <script>
+            // TODO: Tighten up
+            def response = ec.web.response
+            response.addHeader('Access-Control-Allow-Origin', '*')
+            response.addHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+            response.addHeader('Access-Control-Allow-Headers', 'Content-Type')
+        </script>
     </always-actions>
     <transition name="callback" method="get" read-only="true">
-          	<service-call name="pac4j.AuthenticationServices.perform#Callback"/>
-            <default-response type="none"/>
+        <service-call name="pac4j.AuthenticationServices.perform#Callback"/>
+        <default-response type="screen-last"/>
     </transition>
     <transition name="logout">
         <actions>
