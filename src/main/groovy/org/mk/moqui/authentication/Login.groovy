@@ -12,8 +12,12 @@ import org.pac4j.core.context.session.J2ESessionStore
 import org.pac4j.core.engine.DefaultCallbackLogic
 import org.pac4j.core.engine.DefaultLogoutLogic
 import org.pac4j.core.engine.DefaultSecurityLogic
+import org.pac4j.core.engine.SecurityGrantedAccessAdapter
 import org.pac4j.core.http.adapter.J2ENopHttpActionAdapter
+import org.pac4j.core.profile.CommonProfile
 
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.WebConnection
 import java.util.function.Function
 
 @CompileStatic
@@ -62,21 +66,35 @@ class Login {
         DefaultSecurityLogic logic = new DefaultSecurityLogic()
         logic.setProfileManagerFactory(getProfileManagerFactory(ec))
 
+        def clients = getEnabledClients(ec.entity)
+        if (clients.size() < 1) {
+            ec.logger.warn('No identity clients configured for moqui-pac4j-authentication')
+            errorRedirect(ec)
+        }
+
         try {
             def result = logic.perform(
                     buildContext(ec),
                     getConfig(ec),
-                    null,
+                    new MoquiAccessGrantedAdapter(),
                     J2ENopHttpActionAdapter.INSTANCE,
-                    getEnabledClients(ec.entity).join(','),
+                    clients.join(','),
                     DefaultAuthorizers.IS_AUTHENTICATED,
                     '',
                     false
             )
-            logger.info(result.toString())
         }
         catch (Exception e) {
             e.printStackTrace()
+            errorRedirect(ec)
+        }
+    }
+
+    // Called when there is an error to redirect the user to /login/local
+    static void errorRedirect(ExecutionContext ec) {
+        if (!ec.web.response.isCommitted()) {
+            ec.logger.warn('Encountered login error, redirecting to /Login/Local')
+            ec.web.response.sendRedirect('/Login/Local')
         }
     }
 
@@ -118,5 +136,11 @@ class Login {
                 true,
                 true
         )
+    }
+}
+
+class MoquiAccessGrantedAdapter implements SecurityGrantedAccessAdapter<Object, WebContext> {
+    Object adapt(WebContext context, Collection<CommonProfile> profiles, Object... parameters) {
+        return null
     }
 }
