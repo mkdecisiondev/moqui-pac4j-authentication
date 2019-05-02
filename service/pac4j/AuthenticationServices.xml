@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-2.1.xsd">
-    <service verb="perform" noun="Login" type="java" authenticate="anonymous-all" location="org.mk.moqui.authentication.Login" method="login" />
-    <service verb="perform" noun="Callback" type="java" authenticate="anonymous-all" location="org.mk.moqui.authentication.Login" method="callback" />
-    <service verb="perform" noun="Logout" type="java" authenticate="anonymous-all" location="org.mk.moqui.authentication.Login" method="logout" />
-    <service verb="get" noun="ApiKey" type="script" authenticate="anonymous-all" location="component://moqui-pac4j-authentication/src/main/groovy/org/mk/moqui/authentication/AuthorizeJWT.groovy">
+    <service verb="perform" noun="Login" type="java" authenticate="false" location="org.mk.moqui.authentication.Login" method="login" />
+    <service verb="perform" noun="Callback" type="java" authenticate="false" location="org.mk.moqui.authentication.Login" method="callback" />
+    <service verb="perform" noun="Logout" type="java" authenticate="false" location="org.mk.moqui.authentication.Login" method="logout" />
+    <service verb="get" noun="ApiKey" type="script" authenticate="false" location="component://moqui-pac4j-authentication/src/main/groovy/org/mk/moqui/authentication/AuthorizeJWT.groovy">
         <in-parameters>
             <parameter name="token" />
         </in-parameters>

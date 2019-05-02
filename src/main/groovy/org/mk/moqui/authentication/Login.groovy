@@ -15,6 +15,7 @@ import org.pac4j.core.engine.DefaultSecurityLogic
 import org.pac4j.core.engine.SecurityGrantedAccessAdapter
 import org.pac4j.core.http.adapter.J2ENopHttpActionAdapter
 import org.pac4j.core.profile.CommonProfile
+import org.pac4j.core.profile.ProfileManager
 
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.WebConnection
@@ -57,10 +58,11 @@ class Login {
     }
 
     static Function getProfileManagerFactory(ExecutionContext ec) {
-        return { WebContext ctx -> new MoquiProfileManager(ctx, ec) } as Function
+        return { WebContext ctx -> new MoquiProfileManager(ctx, ec) } as Function<WebContext, ProfileManager>
     }
 
     static login(ExecutionContext ec) {
+        ec.artifactExecution.disableAuthz()
         def logger = ec.getLogger()
 
         DefaultSecurityLogic logic = new DefaultSecurityLogic()
@@ -87,6 +89,8 @@ class Login {
         catch (Exception e) {
             e.printStackTrace()
             errorRedirect(ec)
+        } finally {
+            ec.artifactExecution.enableAuthz()
         }
     }
 
@@ -99,6 +103,7 @@ class Login {
     }
 
     static void callback(ExecutionContext ec) {
+        ec.artifactExecution.disableAuthz()
         def logger = ec.getLogger()
         def context = buildContext(ec)
 
@@ -118,15 +123,19 @@ class Login {
         }
         catch (Exception e) {
             e.printStackTrace()
+        } finally {
+            ec.artifactExecution.enableAuthz()
         }
     }
 
     static void logout(ExecutionContext ec) {
+        ec.artifactExecution.disableAuthz()
         DefaultLogoutLogic logout = new DefaultLogoutLogic()
         logout.setProfileManagerFactory(getProfileManagerFactory(ec))
         def loginUrl = "${getMoquiUrl(ec)}/Login/Local"
 
-        logout.perform(
+        try {
+            logout.perform(
                 buildContext(ec),
                 getConfig(ec),
                 J2ENopHttpActionAdapter.INSTANCE,
@@ -135,7 +144,10 @@ class Login {
                 true,
                 true,
                 true
-        )
+            )
+        } finally {
+            ec.artifactExecution.enableAuthz()
+        }
     }
 }
 
