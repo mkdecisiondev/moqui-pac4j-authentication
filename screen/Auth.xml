@@ -13,11 +13,21 @@
         <default-response type="none"/>
     </transition>
 
-    <transition name="getApiKey" method="options">
-        <default-response type="none" />
-    </transition>
     <transition name="getApiKey" require-session-token="false">
         <service-call name="pac4j.AuthenticationServices.get#ApiKey" />
+        <default-response type="none" />
+    </transition>
+
+    <transition name="revokeApiKey" require-session-token="false">
+        <service-call name="pac4j.AuthenticationServices.revoke#ApiKey" />
+        <default-response type="none" />
+    </transition>
+
+    <transition name="getRealmConfig" method="get" require-session-token="false">
+        <actions>
+            <service-call name="pac4j.AuthenticationServices.get#OidcRealmConfiguration" out-map="config" />
+            <script>ec.web.sendJsonResponse(config)</script>
+        </actions>
         <default-response type="none" />
     </transition>
 

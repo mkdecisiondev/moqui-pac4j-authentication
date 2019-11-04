@@ -8,4 +8,36 @@
             <parameter name="token" />
         </in-parameters>
     </service>
+    <service verb="revoke" noun="ApiKey" authenticate="anonymous-all">
+        <in-parameters>
+            <parameter name="apiKey"/>
+        </in-parameters>
+        <actions>
+
+            <script>
+                def eci = ec as org.moqui.impl.context.ExecutionContextImpl
+                def loginKey = eci.ecfi.getSimpleHash(apiKey, "", eci.ecfi.getLoginKeyHashType(), false)
+            </script>
+            <entity-find-one entity-name="moqui.security.UserLoginKey" value-field="key">
+                <field-map field-name="loginKey"/>
+            </entity-find-one>
+            <if condition="key">
+                <!--  TODO: Remove -->
+                <log message="Deleting key ${apiKey}"/>
+                <entity-delete value-field="key" />
+            </if>
+            <log message="${ec.user.userId}"/>
+            <if condition="ec.user.userId">
+                <script>ec.user.logoutUser()</script>
+            </if>
+        </actions>
+    </service>
+
+    <service verb="verify" noun="AccessToken" authenticate="anonymous-all" type="java" method="verifyToken" location="org.mk.moqui.authentication.OidcAuthenticationServices" />
+
+    <service verb="get" noun="OidcRealmConfiguration" authenticate="anonymous-all" type="java" method="getRealmConfiguration" location="org.mk.moqui.authentication.OidcAuthenticationServices">
+        <out-parameters>
+            <parameter name="oidcRealmUrl" />
+        </out-parameters>
+    </service>
 </services>
