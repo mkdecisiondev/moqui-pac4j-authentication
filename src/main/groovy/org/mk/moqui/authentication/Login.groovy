@@ -87,7 +87,7 @@ class Login {
             )
         }
         catch (Exception e) {
-            e.printStackTrace()
+            ec.logger.log(200, "Encounter login error", e)
             errorRedirect(ec)
         } finally {
             ec.artifactExecution.enableAuthz()
