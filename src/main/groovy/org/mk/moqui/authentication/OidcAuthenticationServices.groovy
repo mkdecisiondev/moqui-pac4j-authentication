@@ -28,13 +28,16 @@ class OidcAuthenticationServices {
         def clients = new OidcClientFactory().buildClients(ec.entity)
         if (!clients) return [:] // No clients configured, return
 
-        def jwt = verifyOidcToken(clients, token)
-
-        if (jwt) {
-            username = jwt.JWTClaimsSet.getStringClaim('preferred_username')
-            (ec.user as UserFacadeImpl).internalLoginUser(username)
+        if (ec.user.userId) {
+            username = ec.user.username
         } else {
-            ec.logger.warn('Failed to verify api_token')
+            def jwt = verifyOidcToken(clients, token)
+            if (jwt) {
+                username = jwt.JWTClaimsSet.getStringClaim('preferred_username')
+                (ec.user as UserFacadeImpl).internalLoginUser(username)
+            } else {
+                ec.logger.warn('Failed to verify api_token')
+            }
         }
 
         return [username: username]
