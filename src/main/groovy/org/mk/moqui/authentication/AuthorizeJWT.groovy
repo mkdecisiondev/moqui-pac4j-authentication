@@ -79,6 +79,8 @@ try {
 
     // Save the api key so it can be used to authenticate requests
     saveApiKey(eci, jwt.parsedString, jwt.JWTClaimsSet.getExpirationTime().toInstant().toEpochMilli())
+
+    eci.web.sendJsonResponse([sessionToken: eci.web.sessionToken])
 } catch (JOSEException | BadJWTException e) {
     if (e instanceof JOSEException) {
         eci.logger.warn("JWT signature verification failed")
