@@ -6,6 +6,7 @@
             <before-request>
                 <actions><service-call name="pac4j.AuthenticationServices.verify#AccessToken" in-map="context"/></actions>
             </before-request>
+            <session-config timeout="15"/>
         </webapp>
     </webapp-list>
     <screen-facade>
