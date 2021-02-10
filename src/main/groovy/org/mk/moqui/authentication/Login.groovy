@@ -132,7 +132,7 @@ class Login {
         ec.artifactExecution.disableAuthz()
         DefaultLogoutLogic logout = new DefaultLogoutLogic()
         logout.setProfileManagerFactory(getProfileManagerFactory(ec))
-        def loginUrl = "${getMoquiUrl(ec)}/Login/Local"
+        def loginUrl = "${getMoquiUrl(ec)}/Login"
 
         try {
             logout.perform(
