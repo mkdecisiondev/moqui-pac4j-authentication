@@ -18,4 +18,16 @@
 
         <relationship type="one" related="mk.authentication.AuthenticationClient" />
     </entity>
+
+    <entity entity-name="OidcUserLoginSession" package="mk.authentication">
+        <field name="userId" type="id" is-pk="true"/>
+        <field name="sessionId" type="text-medium" is-pk="true"/>
+
+        <relationship type="one" related="moqui.security.UserAccount" short-alias="userAccount" title="UserAccount"/>
+
+        <index name="OidcUserLoginSessionIdx1">
+            <index-field name="userId"/>
+            <index-field name="sessionId"/>
+        </index>
+    </entity>
 </entities>
