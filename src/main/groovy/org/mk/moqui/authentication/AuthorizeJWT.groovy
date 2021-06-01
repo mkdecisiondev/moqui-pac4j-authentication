@@ -31,7 +31,7 @@ static void saveApiKey(ExecutionContextImpl eci, String sessionId, String key, l
         eci.serviceFacade.sync().name("store#mk.authentication.OidcUserLoginSession")
             .parameter("userId", userId)
             .parameter("sessionId", sessionId)
-            .disableAuthz().requireNewTransaction(true).call()
+            .disableAuthz().call()
     }
 
     // clean out expired keys
@@ -110,8 +110,7 @@ if (eci.user.userId) {
         }
         sendUnauthorized(eci)
     } catch (Exception err) {
-        eci.logger.error('There was a problem parsing JWT request')
-        err.printStackTrace()
+        eci.logger.error('There was a problem parsing JWT request', err)
         sendUnauthorized(eci)
     } finally {
         eci.artifactExecution.enableAuthz()
