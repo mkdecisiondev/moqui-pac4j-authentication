@@ -93,8 +93,7 @@ class OidcAuthenticationServices {
                 logger.warn("JWT signature verification failed")
             }
         } catch (Exception err) {
-            logger.error('There was a problem parsing JWT request')
-            err.printStackTrace()
+            logger.error('There was a problem parsing JWT request', err)
         } finally {
             return jwt
         }
