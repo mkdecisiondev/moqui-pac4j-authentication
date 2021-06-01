@@ -26,7 +26,7 @@ static void saveApiKey(ExecutionContextImpl eci, String sessionId, String key, l
     if (!existing) {
         eci.serviceFacade.sync().name("create", "moqui.security.UserLoginKey")
             .parameters([loginKey: hashedKey, userId: userId, fromDate: fromDate, thruDate: new Timestamp(exp)])
-            .disableAuthz().requireNewTransaction(true).call()
+            .disableAuthz().call()
 
         eci.serviceFacade.sync().name("store#mk.authentication.OidcUserLoginSession")
             .parameter("userId", userId)
