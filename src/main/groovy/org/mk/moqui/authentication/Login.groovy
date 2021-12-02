@@ -94,10 +94,11 @@ class Login {
         }
     }
 
-    // Called when there is an error to redirect the user to /login/local
+    // Called when there is an error to redirect the user to /Login/Local
     static void errorRedirect(ExecutionContext ec) {
         if (!ec.web.response.isCommitted()) {
             ec.logger.warn('Encountered login error, redirecting to /Login/Local')
+            ec.web.response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private")
             ec.web.response.sendRedirect('/Login/Local')
         }
     }
