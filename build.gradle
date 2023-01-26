@@ -3,7 +3,6 @@ apply plugin: 'groovy'
 def moquiDir = file(projectDir.absolutePath + '/../../..')
 def frameworkDir = file(moquiDir.absolutePath + '/framework')
 def jarBaseName = 'moqui-pac4j-authentication'
-sourceCompatibility = '1.8'
 
 repositories {
     flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
@@ -11,17 +10,17 @@ repositories {
 }
 
 dependencies {
-    compile project(':framework')
+    implementation project(':framework')
 
     // use more recent version of bcprov-jdk15on to match what is used in moqui-sftp by sshj to avoid duplicate jars (org.pac4j:pac4j-jwt:3.0.2 uses org.bouncycastle:bcprov-jdk15on:1.59)
-    compile 'org.bouncycastle:bcprov-jdk15on:1.70'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
     // use more recent version of commons-collections4 to match version used elsewhere
-    compile 'org.apache.commons:commons-collections4:4.4'
+    implementation 'org.apache.commons:commons-collections4:4.4'
 
     // pac4j
-    compile 'org.pac4j:pac4j-oidc:3.0.2'
-    compile 'org.pac4j:pac4j-jwt:3.0.2'
-//    compile 'org.pac4j:jee-pac4j:5.0.0'
+    implementation 'org.pac4j:pac4j-oidc:3.0.2'
+    implementation 'org.pac4j:pac4j-jwt:3.0.2'
+//    implementation 'org.pac4j:jee-pac4j:5.0.0'
 }
 
 check.dependsOn.clear()
@@ -34,7 +33,7 @@ jar {
     baseName = jarBaseName
 }
 task copyDependencies { doLast {
-    copy { from (configurations.runtime - project(':framework').configurations.runtime - project(':framework').jar.archivePath)
+    copy { from (configurations.runtimeClasspath - project(':framework').configurations.runtimeClasspath - project(':framework').jar.archivePath)
         into file(projectDir.absolutePath + '/lib') }
 } }
 copyDependencies.dependsOn cleanLib
