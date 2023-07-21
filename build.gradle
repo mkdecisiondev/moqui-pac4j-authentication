@@ -18,9 +18,10 @@ dependencies {
     implementation 'org.apache.commons:commons-collections4:4.4'
 
     // pac4j
-    implementation 'org.pac4j:pac4j-oidc:3.0.2'
-    implementation 'org.pac4j:pac4j-jwt:3.0.2'
-//    implementation 'org.pac4j:jee-pac4j:5.0.0'
+    implementation 'org.pac4j:pac4j-core:5.7.1'
+    implementation 'org.pac4j:pac4j-javaee:5.7.1'
+    implementation 'org.pac4j:pac4j-oidc:5.7.1'
+    implementation 'org.pac4j:pac4j-oauth:5.7.1'
 }
 
 check.dependsOn.clear()
