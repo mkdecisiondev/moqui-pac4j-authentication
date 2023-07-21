@@ -3,27 +3,25 @@ package org.mk.moqui.authentication
 import groovy.transform.CompileStatic
 import org.moqui.context.ExecutionContext
 import org.moqui.entity.EntityFacade
+import org.moqui.impl.context.UserFacadeImpl
 import org.pac4j.core.client.Client
 import org.pac4j.core.config.Config
-import org.pac4j.core.context.DefaultAuthorizers
-import org.pac4j.core.context.J2EContext
+import org.pac4j.core.authorization.authorizer.DefaultAuthorizers
+import org.pac4j.core.context.session.SessionStore
+import org.pac4j.jee.context.JEEContext
+import org.pac4j.core.profile.ProfileManager
 import org.pac4j.core.context.WebContext
-import org.pac4j.core.context.session.J2ESessionStore
-import org.pac4j.core.engine.DefaultCallbackLogic
+import org.pac4j.jee.context.session.JEESessionStore
 import org.pac4j.core.engine.DefaultLogoutLogic
 import org.pac4j.core.engine.DefaultSecurityLogic
+import org.pac4j.core.engine.DefaultCallbackLogic
 import org.pac4j.core.engine.SecurityGrantedAccessAdapter
-import org.pac4j.core.http.adapter.J2ENopHttpActionAdapter
-import org.pac4j.core.profile.CommonProfile
-import org.pac4j.core.profile.ProfileManager
+import org.pac4j.core.profile.UserProfile
+import org.pac4j.jee.http.adapter.JEEHttpActionAdapter
 
-import javax.servlet.http.HttpServletResponse
-import javax.servlet.http.WebConnection
-import java.util.function.Function
 
 @CompileStatic
 class Login {
-    static final J2ESessionStore sessionStore = new J2ESessionStore()
 
     static Config globalConfig
     static List<AuthenticationClientFactory> clientFactories = [
@@ -46,27 +44,23 @@ class Login {
                 .collect { entity -> entity.clientId as String }
     }
 
-    static J2EContext buildContext(ExecutionContext ec) {
+    static JEEContext buildContext(ExecutionContext ec) {
         def request = ec.getWeb().getRequest()
         def response = ec.getWeb().getResponse()
 
-        return new J2EContext(request, response, sessionStore)
+        return new JEEContext(request, response)
     }
 
     static String getMoquiUrl(ExecutionContext ec) {
         return ec.web.getWebappRootUrl(true, true)
     }
 
-    static Function getProfileManagerFactory(ExecutionContext ec) {
-        return { WebContext ctx -> new MoquiProfileManager(ctx, ec) } as Function<WebContext, ProfileManager>
-    }
 
     static login(ExecutionContext ec) {
         ec.artifactExecution.disableAuthz()
         def logger = ec.getLogger()
+        JEESessionStore sessionStore = JEESessionStore.INSTANCE
 
-        DefaultSecurityLogic logic = new DefaultSecurityLogic()
-        logic.setProfileManagerFactory(getProfileManagerFactory(ec))
 
         def clients = getEnabledClients(ec.entity)
         if (clients.size() < 1) {
@@ -75,15 +69,15 @@ class Login {
         }
 
         try {
-            def result = logic.perform(
+            def result = DefaultSecurityLogic.INSTANCE.perform(
                     buildContext(ec),
+                    sessionStore,
                     getConfig(ec),
                     new MoquiAccessGrantedAdapter(),
-                    J2ENopHttpActionAdapter.INSTANCE,
+                    JEEHttpActionAdapter.INSTANCE,
                     clients.join(','),
                     DefaultAuthorizers.IS_AUTHENTICATED,
-                    '',
-                    false
+                    ''
             )
         }
         catch (Exception e) {
@@ -107,20 +101,29 @@ class Login {
         ec.artifactExecution.disableAuthz()
         def logger = ec.getLogger()
         def context = buildContext(ec)
+        JEESessionStore sessionStore = JEESessionStore.INSTANCE
 
-        DefaultCallbackLogic callback = new DefaultCallbackLogic()
-        callback.setProfileManagerFactory(getProfileManagerFactory(ec))
         try {
-            def result = callback.perform(
-                    context,
-                    getConfig(ec),
-                    J2ENopHttpActionAdapter.INSTANCE,
+            DefaultCallbackLogic.INSTANCE.perform(
+                context,
+                sessionStore,
+                getConfig(ec),
+                JEEHttpActionAdapter.INSTANCE,
                 null,
-                    true,
-                    false,
-                    true,
-                    getEnabledClients(ec.entity).join(',')
+                false,
+                null
             )
+
+            // handle incoming profiles
+            ProfileManager profileManager = new ProfileManager(context, sessionStore)
+            new MoquiAccessGrantedAdapter().adapt(context, sessionStore, profileManager.getProfiles())
+
+            // login user
+            Optional<UserProfile> optionalProfile = profileManager.getProfile()
+            if (optionalProfile.isPresent()) {
+                UserProfile profile = optionalProfile.get()
+                ((UserFacadeImpl)ec.user).internalLoginUser(profile.username)
+            }
         }
         catch (Exception e) {
             e.printStackTrace()
@@ -131,29 +134,32 @@ class Login {
 
     static void logout(ExecutionContext ec) {
         ec.artifactExecution.disableAuthz()
-        DefaultLogoutLogic logout = new DefaultLogoutLogic()
-        logout.setProfileManagerFactory(getProfileManagerFactory(ec))
+
         def loginUrl = "${getMoquiUrl(ec)}/Login"
+        JEESessionStore sessionStore = JEESessionStore.INSTANCE
 
         try {
-            logout.perform(
+            DefaultLogoutLogic.INSTANCE.perform(
                 buildContext(ec),
+                sessionStore,
                 getConfig(ec),
-                J2ENopHttpActionAdapter.INSTANCE,
+                JEEHttpActionAdapter.INSTANCE,
                 loginUrl,
                 '/',
-                true,
-                true,
+                false,
+                false,
                 true
             )
+
+            ec.user.logoutUser()
         } finally {
             ec.artifactExecution.enableAuthz()
         }
     }
 }
 
-class MoquiAccessGrantedAdapter implements SecurityGrantedAccessAdapter<Object, WebContext> {
-    Object adapt(WebContext context, Collection<CommonProfile> profiles, Object... parameters) {
+class MoquiAccessGrantedAdapter implements SecurityGrantedAccessAdapter {
+    Object adapt(WebContext context, SessionStore sessionStore, Collection<UserProfile> profiles, Object... parameters) throws Exception {
         return null
     }
 }
