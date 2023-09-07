@@ -12,8 +12,6 @@ repositories {
 dependencies {
     implementation project(':framework')
 
-    // use more recent version of bcprov-jdk15on to match what is used in moqui-sftp by sshj to avoid duplicate jars (org.pac4j:pac4j-jwt:3.0.2 uses org.bouncycastle:bcprov-jdk15on:1.59)
-    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
     // use more recent version of commons-collections4 to match version used elsewhere
     implementation 'org.apache.commons:commons-collections4:4.4'
 
@@ -21,7 +19,10 @@ dependencies {
     implementation 'org.pac4j:pac4j-core:5.7.1'
     implementation 'org.pac4j:pac4j-javaee:5.7.1'
     implementation 'org.pac4j:pac4j-oidc:5.7.1'
-    implementation 'org.pac4j:pac4j-oauth:5.7.1'
+
+    // explicit dependencies to get newer versions
+    implementation 'net.minidev:json-smart:2.5.0'
+    implementation 'com.google.guava:guava:32.1.2-jre'
 }
 
 check.dependsOn.clear()
