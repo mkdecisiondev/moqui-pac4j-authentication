@@ -1,11 +1,10 @@
 package org.mk.moqui.authentication
 
-import com.nimbusds.jose.JWSAlgorithm
-import com.nimbusds.jose.Requirement
 import org.moqui.entity.EntityFacade
 import org.pac4j.core.client.Client
 import org.pac4j.oidc.client.OidcClient
 import org.pac4j.oidc.config.OidcConfiguration
+import com.nimbusds.oauth2.sdk.auth.ClientAuthenticationMethod
 
 class OidcClientFactory implements AuthenticationClientFactory{
 
@@ -18,9 +17,8 @@ class OidcClientFactory implements AuthenticationClientFactory{
             config.setDiscoveryURI(entity.discoveryUri)
             config.setClientId(entity.id)
             config.setSecret(entity.secret)
-            if (entity.preferredJwsAlgorithm) {
-                config.setPreferredJwsAlgorithm(new JWSAlgorithm(entity.preferredJwsAlgorithm, Requirement.RECOMMENDED))
-            }
+            config.setClientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+            config.setPreferredJwsAlgorithmAsString(entity.preferredJwsAlgorithm as String)
             config.setUseNonce(entity.useNonce == 'Y')
             def client = new OidcClient(config)
             client.setName(entity.clientId)
