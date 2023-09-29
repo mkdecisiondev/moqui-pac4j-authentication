@@ -4,6 +4,7 @@ import com.nimbusds.jose.JOSEException
 import com.nimbusds.jose.crypto.factories.DefaultJWSVerifierFactory
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.KeyConverter
+import com.nimbusds.jose.proc.SimpleSecurityContext
 import com.nimbusds.jwt.SignedJWT
 import com.nimbusds.jwt.proc.BadJWTException
 import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier
@@ -68,7 +69,7 @@ if (eci.user.userId) {
         def set = JWKSet.load(metadata.getJWKSetURI().toURL())
 
         // Parse the token so we can use the header
-        def jwt = SignedJWT.parse(context.token)
+        def jwt = SignedJWT.parse(ec.context.token)
 
         // grab the sessionId
         String sessionId = jwt.payload.toJSONObject().get("session_state") as String
@@ -93,7 +94,7 @@ if (eci.user.userId) {
         jwt.verify(verifier)
 
         // Verify JWT Claims (expiration/not before date)
-        claimsVerifier.verify(jwt.JWTClaimsSet)
+        claimsVerifier.verify(jwt.JWTClaimsSet, new SimpleSecurityContext())
 
         // Log user in using the username in the token
         eci.userFacade.internalLoginUser(jwt.JWTClaimsSet.getStringClaim("preferred_username"))
